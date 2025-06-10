@@ -78,6 +78,7 @@ public class CorsoService {
 
 
 
+    //@Transactional
     //metodi per crud
     //@EntityGraph(attributePaths = {"docente", "discente"})
     public List<CorsoDTO> findAll() {
@@ -93,7 +94,7 @@ public class CorsoService {
     }
 
 
-    @EntityGraph(attributePaths = {"docente", "discente"})
+    //@EntityGraph(attributePaths = {"docente", "discente"})
     public CorsoDTO save(CorsoDTO c){
         Corso corso = corsoMapper.toEntity(c);
 
