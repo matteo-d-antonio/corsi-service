@@ -7,9 +7,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
-@NoArgsConstructor          //genera costruttore senza argomenti
-@AllArgsConstructor         //genera costruttore  con tutti i campi degli argomenti
-@Data                       //genera getters and setters ha bisogno di un argument constructor
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 public class DocenteDTO {
 
     private long id;

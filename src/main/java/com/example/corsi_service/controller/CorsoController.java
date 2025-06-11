@@ -19,10 +19,6 @@ public class CorsoController {
     @Autowired
     CorsoService corsoService;
 
-    //@Autowired
-    //DocenteService docenteService;
-    //@Autowired
-    //DiscenteService discenteService;
 
     //lista
     @GetMapping("/list")
