@@ -5,6 +5,7 @@ package com.example.corsi_service.controller;
 //import com.example.demo.service.DiscenteService;
 //import com.example.demo.service.DocenteService;
 import com.example.corsi_service.dto.CorsoDTO;
+import com.example.corsi_service.dto.DocenteDTO;
 import com.example.corsi_service.client.DocenteClient;
 import com.example.corsi_service.entity.Corso;
 import com.example.corsi_service.service.CorsoService;
@@ -25,7 +26,7 @@ public class CorsoController {
     CorsoService corsoService;
 
     @Autowired
-    private DocenteClient docenteClient;
+    DocenteClient docenteClient;
 
     //private static final String DOCENTE_SERVICE_URL = "http://localhost:8081/docenti/";
 
@@ -61,28 +62,6 @@ public class CorsoController {
             return new ResponseEntity<>("Errore nella comunicazione con il servizio docente", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    /*@PostMapping("/create")
-    public ResponseEntity<String> createCorso(@RequestBody CorsoDTO corsoDTO, @RequestParam Long docenteId) {
-        // Chiamata RestTemplate per verificare se il docente esiste
-        String docenteUrl = DOCENTE_SERVICE_URL + docenteId;
-        try {
-            // Chiamata GET per verificare se il docente esiste
-            ResponseEntity<String> docenteResponse = restTemplate.getForEntity(docenteUrl, String.class);
-
-            if (docenteResponse.getStatusCode() == HttpStatus.OK) {
-                // Se il docente esiste, salviamo il corso
-                corsoDTO.setDocenteId(docenteId); // Imposta l'ID del docente nel CorsoDTO
-                corsoService.save(corsoDTO);
-                return new ResponseEntity<>("Corso creato con successo!", HttpStatus.CREATED);
-            } else {
-                // Se il docente non esiste, restituiamo un errore
-                return new ResponseEntity<>("Docente non trovato!", HttpStatus.NOT_FOUND);
-            }
-        } catch (Exception e) {
-            // Se c'è un errore nella chiamata RestTemplate (es. il servizio docente è giù)
-            return new ResponseEntity<>("Errore nella comunicazione con il servizio docente", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }*/
 
     @PutMapping("/{id}")
     public CorsoDTO update(@PathVariable Long id, @RequestBody CorsoDTO corsoDTO) {

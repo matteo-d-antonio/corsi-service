@@ -88,10 +88,10 @@ public class CorsoService {
     }
 
 
-    public CorsoDTO get(Long id) {
+    /*public CorsoDTO get(Long id) {
         Corso corso =corsoRepository.findById(id).orElseThrow();
         return corsoMapper.toDto(corso);
-    }
+    }*/
 
 
     //@EntityGraph(attributePaths = {"docente", "discente"})
