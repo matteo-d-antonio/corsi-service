@@ -2,6 +2,7 @@ package com.example.corsi_service.service;
 
 import com.example.corsi_service.dto.CorsoDTO;
 import com.example.corsi_service.dto.DocenteDTO;
+import com.example.corsi_service.dto.DiscenteDTO;
 import com.example.corsi_service.entity.Corso;
 import com.example.corsi_service.mapstruct.CorsoMapper;
 import com.example.corsi_service.repository.CorsoRepository;
@@ -26,12 +27,15 @@ public class CorsoService {
     @Autowired
     private DocenteService docenteService;
     @Autowired
+    private DiscenteService discenteService;
+    @Autowired
     private WebClient.Builder webClientBuilder;
 
     private final String docenteServiceUrl = "http://localhost:8081/docenti";
+    private final String discenteServiceUrl = "http://localhost:8081/discenti";
 
 
-    //metodi per crud
+    //metodi
     private Mono<DocenteDTO> getDocenteById(Long docenteId) {
         return webClientBuilder.build()
                 .get()
@@ -41,7 +45,7 @@ public class CorsoService {
                 .onErrorResume(e -> Mono.empty());
     }
 
-    public Mono<String> createCorsoWithDocente(CorsoDTO corsoDTO, Long docenteId) {
+    public Mono<String> createCorsoWithDocenteAndDiscenti(CorsoDTO corsoDTO, Long docenteId, List<DiscenteDTO> discenti) {
         // Prima recupera il docente dal servizio Docenti
         return getDocenteById(docenteId)
                 .flatMap(docente -> {
@@ -51,8 +55,27 @@ public class CorsoService {
                     // Se il docente esiste, imposta l'ID del docente e salva il corso
                     corsoDTO.setDocenteId(docenteId);
                     Corso corso = corsoMapper.toEntity(corsoDTO);
-                    corsoRepository.save(corso); // Salva il corso
-                    return Mono.just("Corso creato con successo!");
+                    corsoRepository.save(corso);
+
+                    return Mono.when(discenti.stream()
+                                    .map(discenteDTO -> createDiscenteWithDetails(discenteDTO)) // Crea i discenti
+                                    .toArray(Mono[]::new))
+                            .then(Mono.just("Corso creato con successo!"));
+                });
+    }
+
+    // Crea un discente se non esiste già
+    public Mono<String> createDiscenteWithDetails(DiscenteDTO discenteDTO) {
+        // Verifica se il discente esiste
+        return discenteService.getDiscenteByNomeCognome(discenteDTO.getNome(), discenteDTO.getCognome())
+                .switchIfEmpty(Mono.defer(() -> {
+                    // Se il discente non esiste lo crea
+                    return discenteService.createDiscente(discenteDTO) // Crea il discente
+                            .thenReturn("Discente creato con successo!");
+                }))
+                .onErrorResume(error -> {
+
+                    return Mono.just("Errore nella creazione del discente: " + error.getMessage());
                 });
     }
 

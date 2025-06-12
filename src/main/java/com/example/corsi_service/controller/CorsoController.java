@@ -1,6 +1,7 @@
 package com.example.corsi_service.controller;
 
 import com.example.corsi_service.dto.CorsoDTO;
+import com.example.corsi_service.dto.DatiDTO;
 import com.example.corsi_service.entity.Corso;
 import com.example.corsi_service.service.CorsoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +30,8 @@ public class CorsoController {
     }
 
     @PostMapping("/create")
-    public Mono<ResponseEntity<String>> createCorso(@RequestBody CorsoDTO corsoDTO, @RequestParam Long docenteId) {
-        return corsoService.createCorsoWithDocente(corsoDTO, docenteId)
+    public Mono<ResponseEntity<String>> createCorso(@RequestBody DatiDTO corsoDTO) {
+        return corsoService.createCorsoWithDocenteAndDiscenti(corsoDTO.getCorso(), corsoDTO.getDocenteId(), corsoDTO.getDiscenti())
                 .map(message -> ResponseEntity.ok(message))  // Successo
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body("Errore nella creazione del corso")));  // Gestione errore
     }
