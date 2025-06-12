@@ -10,64 +10,81 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Collections; // Import per Collections.emptyList()
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.Stream; // Import per Stream
 
 @Service
 public class CorsoService {
 
     @Autowired
-    private CorsoRepository corsoRepository;
+    CorsoRepository corsoRepository;
     @Autowired
-    private CorsoMapper corsoMapper;
+    CorsoMapper corsoMapper;
     @Autowired
     private DocenteService docenteService;
+    @Autowired
+    private WebClient.Builder webClientBuilder;
+
+    private final String docenteServiceUrl = "http://localhost:8081/docenti";
 
 
     //metodi per crud
+    private Mono<DocenteDTO> getDocenteById(Long docenteId) {
+        return webClientBuilder.build()
+                .get()
+                .uri(docenteServiceUrl + "/" + docenteId)
+                .retrieve()
+                .bodyToMono(DocenteDTO.class)
+                .onErrorResume(e -> Mono.empty());
+    }
+
+    public Mono<String> createCorsoWithDocente(CorsoDTO corsoDTO, Long docenteId) {
+        // Prima recupera il docente dal servizio Docenti
+        return getDocenteById(docenteId)
+                .flatMap(docente -> {
+                    if (docente == null) {
+                        return Mono.error(new RuntimeException("Docente non trovato!"));
+                    }
+                    // Se il docente esiste, imposta l'ID del docente e salva il corso
+                    corsoDTO.setDocenteId(docenteId);
+                    Corso corso = corsoMapper.toEntity(corsoDTO);
+                    corsoRepository.save(corso); // Salva il corso
+                    return Mono.just("Corso creato con successo!");
+                });
+    }
+
+
+
+    //crud
+    public CorsoDTO save(CorsoDTO c){
+        Corso corso = corsoMapper.toEntity(c);
+        Corso savedCorso = corsoRepository.save(corso);
+        return corsoMapper.toDto(savedCorso);
+    }
+
+    public CorsoDTO get(Long id) {
+        Corso corso = corsoRepository.findById(id).orElseThrow();
+        return corsoMapper.toDto(corso);
+    }
+
     public List<CorsoDTO> findAll() {
         return corsoRepository.findAll().stream()
                 .map(corsoMapper::toDto)
                 .collect(Collectors.toList());
     }
 
-
-    public CorsoDTO get(Long id) {
-        Corso corso =corsoRepository.findById(id).orElseThrow();
-        return corsoMapper.toDto(corso);
-    }
-
-
-    public CorsoDTO save(CorsoDTO corsoDTO){
-
-        Mono<DocenteDTO> docente = docenteService.getDocenteById(corsoDTO.getDocenteId());
-
-        if (docente == null || docente.block() == null) {
-            throw new EntityNotFoundException("Docente non trovato!");
-        }
-
-        Corso corso = corsoMapper.toEntity(corsoDTO);
-        Corso savedCorso = corsoRepository.save(corso);
-        return corsoMapper.toDto(savedCorso);
-    }
-
     public CorsoDTO update(Long id, CorsoDTO corsoDTO) {
         Corso corso=corsoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Corso non trovato"));
+                .orElseThrow(() -> new RuntimeException("Corso non trovato"));
 
-        if(corsoDTO.getNome()!=null) corso.setNome(corsoDTO.getNome());
-        if (corsoDTO.getAnnoAccademico()!=null) corso.setAnnoAccademico(corsoDTO.getAnnoAccademico());
-
+        corso.setNome(corsoDTO.getNome());
+        corso.setAnnoAccademico(corsoDTO.getAnnoAccademico());
         Corso savedCorso = corsoRepository.save(corso);
         return corsoMapper.toDto(savedCorso);
     }
-
 
     public void delete(Long id) {
         corsoRepository.deleteById(id);

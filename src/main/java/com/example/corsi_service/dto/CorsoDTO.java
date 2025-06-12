@@ -12,13 +12,13 @@ public class CorsoDTO {
     private Integer annoAccademico;
     private Long docenteId;
 
-    public Long getDocenteId() {
-        return docenteId;
-    }
+    //public Long getDocenteId() {
+        //return docenteId;
+    //}
 
-    // Setter per docenteId (se non usi Lombok per generarlo)
-    public void setDocenteId(Long docenteId) {
-        this.docenteId = docenteId;
-    }
+
+    //public void setDocenteId(Long docenteId) {
+        //this.docenteId = docenteId;
+    //}
 
 }
